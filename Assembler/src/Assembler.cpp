@@ -10,6 +10,8 @@
 #include "../include/Assembler.h"
 #include "../../common/include/SPUStruct.h"
 #include "../../common/include/SPUStructFuncs.h"
+#include "../../common/include/ReadWritebin.h"
+#include "../include/LabelsSearch.h"
 
 #define NumSearch strchr(TextData->CommandsLinePointers[LineNum], '0') || strchr(TextData->CommandsLinePointers[LineNum], '1') || strchr(TextData->CommandsLinePointers[LineNum], '2') || strchr(TextData->CommandsLinePointers[LineNum], '3') || strchr(TextData->CommandsLinePointers[LineNum], '4') || strchr(TextData->CommandsLinePointers[LineNum], '5') || strchr(TextData->CommandsLinePointers[LineNum], '6') || strchr(TextData->CommandsLinePointers[LineNum], '7') || strchr(TextData->CommandsLinePointers[LineNum], '8') || strchr(TextData->CommandsLinePointers[LineNum], '9')
 
@@ -63,37 +65,112 @@ int Assembler(AsmStruct* TextData, char** argv)
 
     SPUStructCtor(&Commands);
 
+    char CurrentCommand [20] = {};
+
     SPUStructDumpcode(&Commands);
 
-    char CurrentCommand [20] = {};
+    LabelsSearch(TextData, &Commands);
+
+    SPUStructDumpcode(&Commands);
+
+    SPUStructDumplbls(&Commands);
 
     for(size_t LineNum = 0; LineNum < TextData->LinesCounter; LineNum++)
     {
         CurrentCommand [20] = {};
-
-        printf("%ld\n", LineNum);
         
-        AsmDump(TextData);
-
         sscanf(TextData->CommandsLinePointers[LineNum], "%s", CurrentCommand);
 
         if(!strcmp(CurrentCommand, "push"))
         {
             Commands.code[Commands.codeSize] = Instruction_push;
 
-            int ValueForCommand = 0;
+            int ArgForCommand = 0;
             
             sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push"), "%s", CurrentCommand);
 
-            printf("%s\n", CurrentCommand);
+            ArgForCommand = atoi(CurrentCommand);
+
+            Commands.code[Commands.codeSize + 1] = ArgForCommand;
+
+            if(ArgForCommand == 1 || ArgForCommand == 2 || ArgForCommand == 5 || ArgForCommand == 6)
+            {
+
+            sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push") + 2, "%s", CurrentCommand);
+
+            int ValueForCommand = 0;
 
             ValueForCommand = atoi(CurrentCommand);
 
-            Commands.code[Commands.codeSize + 1] = ValueForCommand;
+            Commands.code[Commands.codeSize + 2] = ValueForCommand;
+
+            Commands.codeSize = Commands.codeSize + 3;
+            }
+
+            if(ArgForCommand == 3 || ArgForCommand == 7)
+            {
+                int PushNum = 0, PushRegNum = 0;
+
+                sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push") + 2, "%s", CurrentCommand);
+
+                PushNum = atoi(CurrentCommand);
+
+                Commands.code[Commands.codeSize + 2] = PushNum;
+                
+                sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push") + 2 + strlen(CurrentCommand), "%s", CurrentCommand);
+
+                PushRegNum = atoi(CurrentCommand);
+
+                Commands.code[Commands.codeSize + 3] = PushRegNum;
+
+                Commands.codeSize+=4;
+            }
+        }
+        else if(!strcmp(CurrentCommand, "pop"))
+        {
+            Commands.code[Commands.codeSize] = Instruction_pop;
+
+            int ArgForCommand = 0;
+            
+            sscanf(TextData->CommandsLinePointers[LineNum] + strlen("pop"), "%s", CurrentCommand);
+
+            ArgForCommand = atoi(CurrentCommand);
+
+            Commands.code[Commands.codeSize + 1] = ArgForCommand;
+
+            if(ArgForCommand == 1 || ArgForCommand == 2)
+            {
+                int registernum = 0;
+
+                sscanf(TextData->CommandsLinePointers[LineNum] + strlen("pop") + 2, "%s", CurrentCommand);
+
+                registernum = atoi(CurrentCommand);
+
+                Commands.code[Commands.codeSize + 2] = registernum;
+
+                Commands.codeSize+=1;
+
+            }else if (ArgForCommand == 3)
+            {
+                int PushNum = 0, PushRegNum = 0;
+
+                sscanf(TextData->CommandsLinePointers[LineNum] + strlen("pop") + 2, "%s", CurrentCommand);
+
+                PushNum = atoi(CurrentCommand);
+
+                Commands.code[Commands.codeSize + 2] = PushNum;
+                
+                sscanf(TextData->CommandsLinePointers[LineNum] + strlen("pop") + 2 + strlen(CurrentCommand), "%s", CurrentCommand);
+
+                PushRegNum = atoi(CurrentCommand);
+
+                Commands.code[Commands.codeSize + 3] = PushRegNum;
+
+                Commands.codeSize+=2;
+            }
 
             Commands.codeSize = Commands.codeSize + 2;
         }
-        else OneCellCommand("pop", Instruction_pop)
         else OneCellCommand("in", Instruction_in)
         else OneCellCommand("out", Instruction_out)
         else OneCellCommand("add", Instruction_add)
@@ -106,6 +183,9 @@ int Assembler(AsmStruct* TextData, char** argv)
         else OneCellCommand("stkdump", Instruction_stkdump)
         else OneCellCommand("sfudump", Instruction_sfudump)
         else OneCellCommand("lbldump", Instruction_lbldump)
+        else OneCellCommand("regdump", Instruction_regdump)
+        else OneCellCommand("ramdump", Instruction_ramdump)
+        else OneCellCommand("codedump", Instruction_codedump)
         else OneCellCommand("hlt", Instruction_hlt)
         else JumpCommand("jmp", Instruction_jmp)
         else JumpCommand("ja", Instruction_ja)
@@ -115,30 +195,31 @@ int Assembler(AsmStruct* TextData, char** argv)
         else JumpCommand("je", Instruction_je)
         else JumpCommand("jne", Instruction_jne)
         else if(strchr(CurrentCommand, ':'))
-        {                                               //TODO rename all
-            int i = 0;                             
-            
-            char TemporraryBuf [15] ={};
+        {
+        }
+        else if(!strcmp(CurrentCommand, "call"))
+        {
+            Commands.code[Commands.codeSize] = Instruction_call;
 
-            while (CurrentCommand[i] != ':')
-            {
-                TemporraryBuf[i] = CurrentCommand[i];
-
-                i++;
+            sscanf(TextData->CommandsLinePointers[LineNum] + strlen("call"),"%s", CurrentCommand);
+                                                                                                                
+            for (int i = 0; i < Commands.CurrentLabelsQuantity; i++)                                        
+            {                                                                                               
+                if (!strcmp(Commands.Labels[i].CurrentLabelName, CurrentCommand))                           
+                {                                                                                           
+                    Commands.code[Commands.codeSize + 1] = Commands.Labels[i].LabelIp;                      
+                                                                                                           
+                    break;                                                                                  
+                }                                                                                           
             }
-            
-            i++;
 
-            TemporraryBuf[i] = '\0';
+            Commands.codeSize+=2;
+        }
+        else if(!strcmp(CurrentCommand, "ret"))
+        {
+            Commands.code[Commands.codeSize] = Instruction_ret;
 
-            (Commands.Labels[Commands.CurrentLabelsQuantity]).LabelIp = (int) Commands.codeSize;     //эээ сомнительно
-
-            for(int j = 0; j < i; j++)
-            {
-                (Commands.Labels[Commands.CurrentLabelsQuantity]).CurrentLabelName[j] = TemporraryBuf[j];             //TODO норм ли?
-            }
-         
-            Commands.CurrentLabelsQuantity++;
+            Commands.codeSize+=1;
         }
         else
         {
@@ -148,13 +229,11 @@ int Assembler(AsmStruct* TextData, char** argv)
         }
     }   
 
-    FILE* Binary = fopen(argv[3], "wb");
+    SPUStructDumpcode(&Commands);
 
-    fwrite(&Commands.codeSize, sizeof(int), 1, Binary);
+    Writebin(&Commands, argv[3]);
 
-    fwrite(Commands.code, sizeof(int), Commands.codeSize, Binary);
-
-    fclose(Binary);
+    SPUStructCtor(&Commands);
 
     #undef OneCellCommand
     #undef JumpCommand

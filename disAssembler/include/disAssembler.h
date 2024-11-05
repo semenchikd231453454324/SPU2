@@ -1,7 +1,7 @@
 #ifndef DISASSEMBLER_H
 #define DISASSEMBLER
 
-#include "..\..\common\include\SPUStruct.h"
+#include "../../common/include/SPUStruct.h"
 
 int disAssembler(SPUStruct* Commands, char** argv);
 

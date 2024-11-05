@@ -11,6 +11,12 @@
 
 int main(int argc, char* argv[])
 {
+    if(argc != 4)
+    {
+        printf("Invalid arguments number");
+
+        return 1;
+    }
     AsmStruct TextData = {};
 
     AsmStructCtor(&TextData, argv);

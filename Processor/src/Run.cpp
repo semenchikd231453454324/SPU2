@@ -7,31 +7,73 @@
 
 #include "../include/Run.h"
 #include "../../Stack/include/Stack.h"
+#include "../../common/include/SPUStructFuncs.h"
+#include "../include/GetArgs.h"
+
+#define conditionaljump( signs )                \
+    int SecondNum = StackPop(Stack);            \
+    int FirstNum = StackPop(Stack);             \
+                                                \
+    if(FirstNum signs SecondNum)                \
+    {                                           \
+        ip = Commands->code[ip + 1];            \
+    }                                           \
+    else                                        \
+    {                                           \
+        ip = ip + 2;                            \
+    }                                           \
+                                                \
+    break
+
+#define TWOELEMENTSOPERATION( sign )                \
+    int FirstNum = 0, SecondNum = 0, Result = 0;    \
+                                                    \
+    FirstNum = StackPop(Stack);                     \
+    SecondNum = StackPop(Stack);                    \
+                                                    \
+    Result = SecondNum sign FirstNum;               \
+                                                    \
+    StackPush(Stack, Result);                       \
+                                                    \
+    ip = ip + 1;                                    \
+                                                    \
+    break
+
 
 void Run(SPUStruct* Commands, StackStruct* Stack)
 {
     assert(Commands);
 
+    StackStruct retstk = {};
+
     int ip = 0;
     int WorkStatus = 1;
 
+    StackCtor(&retstk);
+
+    int pis = 0;
+
     while (WorkStatus)
     {
+        printf("Command number = %d\n\n", pis);
+        pis++;
+
         switch (Commands->code[ip])
         {
         case Instruction_push:                                             //Кладем в стэк
         {                                             
-            StackPush(Stack, Commands->code[ip + 1]);
-            ip = ip + 2;
+            GetPushArg(Commands, Stack, Commands->code[ip + 1], &ip);
+
+            ip = ip + 1;
 
             break;
         }
 
         case Instruction_pop:                                             //Достаем из стэка
         {
-            StackPop(Stack);
+            GetPopArg(Commands, Stack, Commands->code[ip + 1], &ip);
 
-            ip = ip + 1;
+            ip+=1;
 
             break;
         }
@@ -65,63 +107,22 @@ void Run(SPUStruct* Commands, StackStruct* Stack)
 
         case Instruction_add:                                             //Cложение двух верхних элементов
         {
-            int Result = 0;
-        
-            Result = StackPop(Stack) + StackPop(Stack);
-
-            StackPush(Stack, Result);
-
-            ip = ip + 1;
-
-            break;
+            TWOELEMENTSOPERATION( + );
         }
 
         case Instruction_subtr:                                              //Вычитание двух верхних элементов(верхний это вычитаемое)
         {
-            int Minued = 0, Subtrahend = 0, Result = 0;
-
-            Subtrahend = StackPop(Stack);
-            Minued     = StackPop(Stack);
-
-            Result = Minued - Subtrahend;
-
-            StackPush(Stack, Result);
-
-            ip = ip + 1;
-
-            break;
+            TWOELEMENTSOPERATION( - );
         }
 
         case Instruction_multipl:                                             //Умножение
         {
-            int FirstFactor = 0, SecondFactor = 0, Result = 0;
-
-            FirstFactor  = StackPop(Stack);
-            SecondFactor = StackPop(Stack);
-
-            Result = FirstFactor*SecondFactor;
-
-            StackPush(Stack, Result);
-
-            ip = ip + 1;
-
-            break;
+            TWOELEMENTSOPERATION( * );
         }
 
         case Instruction_div:                                             //Деление
         {
-            int Dividend = 0, Divider = 0, Result = 0;
-
-            Divider  = StackPop(Stack);
-            Dividend = StackPop(Stack);
-
-            Result = Dividend / Divider;
-
-            StackPush(Stack, Result);
-
-            ip = ip + 1;
-
-            break;
+            TWOELEMENTSOPERATION( / );
         }
 
         case Instruction_SQRT:                                             //sqrt
@@ -182,136 +183,98 @@ void Run(SPUStruct* Commands, StackStruct* Stack)
 
         case Instruction_ja:
         {
-            int SecondNum = StackPop(Stack);
-            int FirstNum = StackPop(Stack);
-
-            if(FirstNum > SecondNum)
-            {
-                ip = Commands->code[ip + 1];
-            }
-            else
-            {
-                ip = ip + 2;
-            }
-
-            break;
+            conditionaljump( > );
         }
 
         case Instruction_jae:
         {
-            int SecondNum = StackPop(Stack);
-            int FirstNum = StackPop(Stack);
-
-            if(FirstNum >= SecondNum)
-            {
-                ip = Commands->code[ip + 1];
-            }
-            else
-            {
-                ip = ip + 2;
-            }
-
-            break;
+            conditionaljump( >= );
         }
 
         case Instruction_jb:
         {
-            int SecondNum = StackPop(Stack);
-            int FirstNum = StackPop(Stack);
-
-            if(FirstNum < SecondNum)
-            {
-                ip = Commands->code[ip + 1];
-            }
-            else
-            {
-                ip = ip + 2;
-            }
-
-            break;
+            conditionaljump( < );
         }
 
         case Instruction_jbe:
         {
-            int SecondNum = StackPop(Stack);
-            int FirstNum = StackPop(Stack);
-
-            if(FirstNum <= SecondNum)
-            {
-                ip = Commands->code[ip + 1];
-            }
-            else
-            {
-                ip = ip + 2;
-            }
-
-            break;
+            conditionaljump( <= );
         }
 
         case Instruction_je:
         {
-            int SecondNum = StackPop(Stack);
-            int FirstNum = StackPop(Stack);
-
-            if(FirstNum == SecondNum)
-            {
-                ip = Commands->code[ip + 1];
-            }
-            else
-            {
-                ip = ip + 2;
-            }
-
-            break;
+            conditionaljump( = );
         }
 
         case Instruction_jne:
         {
-            int SecondNum = StackPop(Stack);
-            int FirstNum = StackPop(Stack);
-
-            if(FirstNum != SecondNum)
-            {
-                ip = Commands->code[ip + 1];
-            }
-            else
-            {
-                ip = ip + 2;
-            }
-
-            break;
+            conditionaljump( != );
         }
 
         case Instruction_sfudump:
         {
             printf("\n\n\n SFUDUMP\n");
-
-            printf("Codesize = %d\n", Commands->codeSize);
-
-            for(size_t CodeElemNum = 0; CodeElemNum < Commands->codeSize; CodeElemNum++)
-            {
-                printf("code[%d] = %d\n", CodeElemNum, Commands->code[CodeElemNum]);
-            }
-
             printf("Current ip = %d\n", ip);
 
+            SPUStructDump(Commands);
+
             ip = ip + 1;
+
+            break;
+        }
+
+        case Instruction_codedump:
+        {
+            SPUStructDumpcode(Commands);
+
+            ip+=1;
 
             break;
         }
 
         case Instruction_lbldump:
         {
-            for (int i = 0; i < LabelsQuantity; i++)
-            {
-                printf("Label[%d]: Labelname: %s LabelIP: %d\n", i, Commands->Labels[i].CurrentLabelName, Commands->Labels[i].LabelIp);
-            }
+            SPUStructDumplbls(Commands);
             
             ip = ip + 1;
             
             break;
         }
 
+        case Instruction_regdump:
+        {
+            SPUStructDumpregs(Commands);
+            
+            ip = ip + 1;
+            
+            break;
+        }
+
+        case Instruction_ramdump:
+        {
+            SPUStructDumpRAM(Commands);
+            
+            ip = ip + 1;
+            
+            break;
+        }
+
+        case Instruction_call:
+        {
+            StackPush(&retstk, ip + 2);
+
+            ip =  Commands->code[ip + 1];
+
+            break;
+        }
+
+        case Instruction_ret:
+        {
+            ip = StackPop(&retstk);
+
+            break;
+        }
+        
         default:
         {
             printf("Syntax error, entered Invalid command\n");
@@ -322,4 +285,9 @@ void Run(SPUStruct* Commands, StackStruct* Stack)
         }
         }
     }
+
+    StackDestruct(&retstk);
+
+    #undef conditionaljump
+    #undef TWOELEMENTSOPERATION
 }

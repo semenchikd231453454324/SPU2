@@ -7,6 +7,7 @@
 
 #include "../../common/include/SPUStruct.h"
 #include "../../common/include/SPUStructFuncs.h"
+#include "../../common/include/ReadWritebin.h"
 #include "../../Stack/include/Stack.h"
 #include "../include/Run.h"
 
@@ -17,6 +18,12 @@ int main(int argc, char* argv[])
 
     SPUStructCtor(&Commands);
     StackCtor(&Stack);
+
+    SPUStructDumpcode(&Commands);
+
+    Readbin(&Commands, argv[1]);
+
+    SPUStructDumpcode(&Commands);
 
     Run(&Commands, &Stack);
 

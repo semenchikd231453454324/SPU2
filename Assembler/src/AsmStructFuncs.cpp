@@ -12,6 +12,7 @@
 int AsmStructCtor(AsmStruct* TextData, char** argv)
 {
     assert(TextData);
+    assert(argv);
 
     struct stat FileInf = {};
     stat(argv[1], &FileInf);
@@ -27,7 +28,7 @@ int AsmStructCtor(AsmStruct* TextData, char** argv)
 
     TextProcessing(TextData, argv);
 
-    return 0;  //FIXME
+    return 0;
 }
 
 int AsmStructDtor(AsmStruct* TextData)
@@ -46,7 +47,7 @@ int AsmDump(AsmStruct* TextData)
 {
     assert(TextData);
 
-    printf("Text size = %d\nLinesNumber = %d\n\n TextBuffer('%'c):\n", TextData->TextSize, TextData->LinesCounter);
+    printf("Text size = %ld\nLinesNumber = %ld\n\n TextBuffer(0/0'c'):\n", TextData->TextSize, TextData->LinesCounter);
 
     for(size_t i = 0; i < TextData->TextSize; i++)
     {   

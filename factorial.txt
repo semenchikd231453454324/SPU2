@@ -1,0 +1,40 @@
+in
+pop 1 1
+push 2 1
+pop 1 2
+call fact
+push 2 2
+sfudump
+regdump             #penisffgg
+out
+hlt
+
+
+
+fact:
+push 2 1
+push 1 1
+je end
+push 2 2
+push 2 1
+stkdump
+call decrease
+stkdump
+multipl
+stkdump
+pop 1 2
+regdump
+push 2 1
+regdump
+call decrease
+pop 1 1
+regdump
+call fact
+end:
+ret
+
+
+decrease:
+push 1 1
+subtr
+ret

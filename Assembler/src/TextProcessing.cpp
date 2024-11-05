@@ -23,13 +23,17 @@ int TextProcessing(AsmStruct* TextData, char** argv)
 
     for(size_t ElemNum = 0; ElemNum < TextData->TextSize; ElemNum++)                
     {
-        if(TextData->CommandsTextBuffer[ElemNum] == '\n')
+        if (TextData->CommandsTextBuffer[ElemNum] == '\n' && TextData->CommandsTextBuffer[ElemNum + 1] == '\n')
+        {}
+        else if(TextData->CommandsTextBuffer[ElemNum] == '\n')
         {
             TextData->LinesCounter++;
         }
     }
-    
+
     TextData->LinesCounter+=1;
+
+    printf("TextData->LinesCounter = %ld\n", TextData->LinesCounter);
 
     TextData->CommandsLinePointers = (char**) calloc(TextData->LinesCounter, sizeof(char*));
     if(!TextData->CommandsLinePointers)
@@ -43,7 +47,7 @@ int TextProcessing(AsmStruct* TextData, char** argv)
     int CurrentTextDataNum = 0, CurrentElemInLineNumber = 0;
 
     for(size_t i = 0; i < TextData->LinesCounter; i++)
-    {   
+    {           
         TextData->CommandsLinePointers[i] = CurrentLinePointer;
 
         CurrentElemInLineNumber = 0;
@@ -57,16 +61,23 @@ int TextProcessing(AsmStruct* TextData, char** argv)
         TextData->CommandsTextBuffer[CurrentTextDataNum] = '\0';
         CurrentElemInLineNumber++;
         CurrentTextDataNum++;
+
+        if(TextData->CommandsTextBuffer[CurrentTextDataNum] == '\n' && TextData->CommandsTextBuffer[CurrentTextDataNum])
+        {
+            while(TextData->CommandsTextBuffer[CurrentTextDataNum] == '\n' && TextData->CommandsTextBuffer[CurrentTextDataNum + 1] == '\n' && TextData->CommandsTextBuffer[CurrentTextDataNum])
+            {
+                CurrentElemInLineNumber++;
+                CurrentTextDataNum++;
+            }
+
+            CurrentElemInLineNumber++;
+            CurrentTextDataNum++;
+        }
+
         CurrentLinePointer = CurrentLinePointer + CurrentElemInLineNumber;
     }
 
-
-    // for(size_t i = 0; i < TextData->TextSize; i++)
-    // {
-    //     printf("%c", TextData->CommandsTextBuffer[i]);
-    // }
-
     fclose(MoyText);
 
-    return 0;  //FIXME
+    return 0;
 }
