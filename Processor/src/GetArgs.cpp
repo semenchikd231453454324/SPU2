@@ -17,7 +17,7 @@ int GetPushArg(SPUStruct* Commands,StackStruct* Stack, int arg, int* ip)
 
     *ip += 1;
 
-    if(arg & 1)
+    if(arg & 1)     // magic number
     {
         result+=Commands->code[*ip+=1];
     }

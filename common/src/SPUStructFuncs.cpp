@@ -9,7 +9,7 @@
 
 int SPUStructCtor(SPUStruct* Commands)
 {
-    assert(Commands);
+    assert(Commands);           // FIXME calloc check
 
     Commands->code = (int*) calloc(ConstCommandsSize, sizeof(int));
     Commands->registers = (int*) calloc(RegisterQuantity, sizeof(int));

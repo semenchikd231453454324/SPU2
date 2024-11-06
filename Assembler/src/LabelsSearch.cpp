@@ -38,40 +38,39 @@ int LabelsSearch(AsmStruct* TextData, SPUStruct* Commands)
         {
             int ArgForCommand = 0;
             
-            sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push"), "%s", CurrentCommand);
+            sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push"), "%s", CurrentCommand); // FIXME sizeof("push")
 
-            ArgForCommand = atoi(CurrentCommand);
+            ArgForCommand = atoi(CurrentCommand);  // FIXME safety func
 
-            if(ArgForCommand == 1 || ArgForCommand == 2)
+            if(ArgForCommand == 1 || ArgForCommand == 2 || ArgForCommand == 5 || ArgForCommand == 6) // FIXME magic numbers
             {
-
-            Commands->codeSize += 3;
-
+                Commands->codeSize = Commands->codeSize + 3;
             }
 
-            if(ArgForCommand == 3)
+            if(ArgForCommand == 3 || ArgForCommand == 7)
             {
-
-                Commands->codeSize += 4;
-
+                Commands->codeSize+=4;
             }
         }
         else if(!strcmp(CurrentCommand, "pop"))
         {
+
             int ArgForCommand = 0;
             
             sscanf(TextData->CommandsLinePointers[LineNum] + strlen("pop"), "%s", CurrentCommand);
 
             ArgForCommand = atoi(CurrentCommand);
 
-            if(ArgForCommand == 1)
+            if(ArgForCommand == 1 || ArgForCommand == 2)
             {
-
                 Commands->codeSize+=1;
 
+            }else if (ArgForCommand == 3)
+            {
+                Commands->codeSize+=2;
             }
 
-            Commands->codeSize += 2;
+            Commands->codeSize = Commands->codeSize + 2;
         }
         else OneCellCommand("in", Instruction_in)
         else OneCellCommand("out", Instruction_out)

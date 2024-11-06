@@ -203,7 +203,7 @@ void Run(SPUStruct* Commands, StackStruct* Stack)
 
         case Instruction_je:
         {
-            conditionaljump( = );
+            conditionaljump( == );
         }
 
         case Instruction_jne:

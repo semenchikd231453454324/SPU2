@@ -87,13 +87,13 @@ int Assembler(AsmStruct* TextData, char** argv)
 
             int ArgForCommand = 0;
             
-            sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push"), "%s", CurrentCommand);
+            sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push"), "%s", CurrentCommand); // FIXME sizeof("push")
 
-            ArgForCommand = atoi(CurrentCommand);
+            ArgForCommand = atoi(CurrentCommand);  // FIXME safety func
 
             Commands.code[Commands.codeSize + 1] = ArgForCommand;
 
-            if(ArgForCommand == 1 || ArgForCommand == 2 || ArgForCommand == 5 || ArgForCommand == 6)
+            if(ArgForCommand == 1 || ArgForCommand == 2 || ArgForCommand == 5 || ArgForCommand == 6) // FIXME magic numbers
             {
 
             sscanf(TextData->CommandsLinePointers[LineNum] + strlen("push") + 2, "%s", CurrentCommand);
@@ -213,7 +213,7 @@ int Assembler(AsmStruct* TextData, char** argv)
                 }                                                                                           
             }
 
-            Commands.codeSize+=2;
+            Commands.codeSize += 2;
         }
         else if(!strcmp(CurrentCommand, "ret"))
         {

@@ -71,7 +71,7 @@ int TextProcessing(AsmStruct* TextData, char** argv)
             }
 
             CurrentElemInLineNumber++;
-            CurrentTextDataNum++;
+            CurrentTextDataNum++;       // do while
         }
 
         CurrentLinePointer = CurrentLinePointer + CurrentElemInLineNumber;

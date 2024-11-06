@@ -18,7 +18,7 @@ struct LabelStruct
     int LabelIp;
 };
 
-struct SPUStruct                //TODO читалка и писалка в коммон
+struct SPUStruct
 {
     int* code;
     size_t codeSize;
